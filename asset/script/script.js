@@ -32,22 +32,41 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>${task.text}</span>
             <button class="delete-task">Elimina</button>
         `;
-        li.querySelector('input').addEventListener('change', () => toggleTask(task.id));
-        li.querySelector('.delete-task').addEventListener('click', () => deleteTask(task.id));
+        li.querySelector('input').addEventListener('change', () => toggleTask(task.id, li));
+        li.querySelector('.delete-task').addEventListener('click', () => deleteTask(task.id, li));
         taskList.appendChild(li);
     };
 
-    const toggleTask = function(id) {
+    const toggleTask = function(id, li) {
         const task = tasks.find(t => t.id === id);
         if (task) {
             task.completed = !task.completed;
+            li.classList.toggle('completed');
+            if (task.completed) {
+                li.dataset.timeout = setTimeout(() => {
+                    li.style.opacity = '0';
+                    li.style.height = '0';
+                    li.style.margin = '0';
+                    li.style.padding = '0';
+                    li.dataset.deleteTimeout = setTimeout(() => {
+                        deleteTask(id, li);
+                    }, 500);
+                }, 2000);
+            } else {
+                clearTimeout(Number(li.dataset.timeout));
+                clearTimeout(Number(li.dataset.deleteTimeout));
+                li.style.opacity = '';
+                li.style.height = '';
+                li.style.margin = '';
+                li.style.padding = '';
+            }
             updateTaskStats();
         }
     };
 
-    const deleteTask = function(id) {
+    const deleteTask = function(id, li) {
         tasks = tasks.filter(t => t.id !== id);
-        renderTasks();
+        li.remove();
         updateTaskStats();
     };
 
